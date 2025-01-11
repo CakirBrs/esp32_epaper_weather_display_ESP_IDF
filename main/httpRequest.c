@@ -5,10 +5,8 @@
 #include "esp_http_client.h"
 #include "esp_wifi.h"
 
-#include "secret.h"
-
 static const char *TAG = "HTTP_CLIENT";
-
+char open_weather_map_api_key[] = "*************";
 
 char city[] = "Kadikoy";
 char country_code[] = "TR";
