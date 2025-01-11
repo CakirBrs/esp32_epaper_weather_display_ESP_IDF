@@ -52,7 +52,7 @@ void epaper_wait_milliseconds(uint32_t milliseconds);
 void epaper_wait_seconds(uint32_t seconds);
 void epaper_red_buffer_clear(void);
 void epaper_bw_buffer_clear(void);
-
+void epaper_reset();
 #endif
 
 

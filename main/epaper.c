@@ -13,7 +13,6 @@ int red_bufsize;        // size of the red buffer
 uint8_t *bw_buf;        // the pointer to the black and white buffer if using on-chip ram
 uint8_t *red_buf;       // the pointer to the red buffer if using on-chip ram
 
-uint8_t *char_buf;  
 
 uint8_t debugB = 0;
 
@@ -85,10 +84,6 @@ void epaper_init(void){
     memset(red_buf, 0x00, red_bufsize);
 
 
-    char_buf = (uint8_t *)malloc(15 * (15 / 8 + 1) * 8 / 8);
-    memset(char_buf, 0x00, 15 * (15 / 8 + 1) * 8 / 8);
-
-
     // Reset ekran
     gpio_set_level(PIN_RST, 0);
     vTaskDelay(pdMS_TO_TICKS(100));
@@ -140,6 +135,62 @@ void epaper_init(void){
     spi_data(0x00);
     wait_busy();
     
+}
+
+void epaper_reset(){
+    
+
+    // Reset ekran
+    gpio_set_level(PIN_RST, 0);
+    vTaskDelay(pdMS_TO_TICKS(100));
+    gpio_set_level(PIN_RST, 1);
+    vTaskDelay(pdMS_TO_TICKS(100));
+    
+    wait_busy();
+
+    spi_cmd(0x12);  // Software reset
+    vTaskDelay(pdMS_TO_TICKS(100));
+    wait_busy();
+
+
+    spi_cmd(0x01); //Driver output control
+    spi_data(0xF9);
+    spi_data(0x00);
+    spi_data(0x00);
+    
+    
+    spi_cmd(0x11); //data entry mode
+    spi_data(0x01);
+
+    spi_cmd(0x44); //set Ram-X address start/end position
+    spi_data(0x00);
+    spi_data(0x0F); //0x0F-->(15+1)*8=128
+
+    spi_cmd(0x45);  //set Ram-Y address start/end position
+    spi_data(0xF9); //0xF9-->(249+1)=250
+    spi_data(0x00);
+    spi_data(0x00);
+    spi_data(0x00);
+    
+
+
+    spi_cmd(0x3C); //BorderWavefrom
+    spi_data(0x05);
+
+    spi_cmd(0x18); //Read built-in temperature sensor
+    spi_data(0x80);
+
+    spi_cmd(0x21); //  Display update control
+    spi_data(0x00);
+    spi_data(0x80);
+
+    spi_cmd(0x4E); // set RAM x address count to 0;
+    spi_data(0x00);
+    spi_cmd(0x4F); // set RAM y address count to 0X199;
+    spi_data(0xF9);
+    spi_data(0x00);
+    wait_busy();
+    ESP_LOGI(TAG, "Epaper Display Reset");
 }
 
 void epaper_update(void){
@@ -211,6 +262,7 @@ void epaper_writeBufferToDisplay(void){
 void epaper_deep_sleep(void){
     spi_cmd(0x10);
     spi_data(0x01); // Deep sleep mode 1
+    ESP_LOGI(TAG, "Epaper Display Deep Sleep");
 }
 void epaper_draw_blackBitmap(const unsigned char IMAGE[]){
     spi_cmd(0x4E); // set RAM x address count to 0;

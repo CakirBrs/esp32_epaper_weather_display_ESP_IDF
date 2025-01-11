@@ -6,7 +6,7 @@
 #include "esp_wifi.h"
 
 static const char *TAG = "HTTP_CLIENT";
-char open_weather_map_api_key[] = "*************";
+char open_weather_map_api_key[] = "***************";
 
 char city[] = "Kadikoy";
 char country_code[] = "TR";
@@ -22,7 +22,7 @@ char tempS[7];
 char humidS[7];
 int year, month, day, hour, minute, second;
 
-void get_temp_pressure_humidity(const char *json_string)
+void get_temp_pressure_humidity(const char *json_string , size_t response_len)
 {
    
     cJSON *root = cJSON_Parse(json_string);
@@ -37,10 +37,11 @@ void get_temp_pressure_humidity(const char *json_string)
     sprintf(humidS, "%d", humidity);
     
     cJSON_Delete(root);
-    free(response_data);
+    memset(response_data, 0, response_len);
+    //free(response_data);
 }
 
-void get_time_date(const char *json_string)
+void get_time_date(const char *json_string, size_t response_len)
 {
     cJSON *root = cJSON_Parse(json_string);
     char datetime_value[50];
@@ -50,7 +51,8 @@ void get_time_date(const char *json_string)
     sscanf(datetime_value, "%d-%d-%dT%d:%d:%d", &year, &month, &day, &hour, &minute, &second);
     ESP_LOGI("WorldTimeAPI", "Year: %d, Month: %d, Day: %d, Hour: %d, Minute: %d, Second: %d", year, month, day, hour, minute, second);
     cJSON_Delete(root);
-    free(response_data2);
+    memset(response_data2, 0, response_len);
+    //free(response_data2);
 }
 
 esp_err_t _http_event_handlerWeather(esp_http_client_event_t *evt)
@@ -65,7 +67,7 @@ esp_err_t _http_event_handlerWeather(esp_http_client_event_t *evt)
         case HTTP_EVENT_ON_FINISH:
             all_chunks_received = true;
             ESP_LOGI("OpenWeatherAPI", "Received data: %s", response_data);
-            get_temp_pressure_humidity(response_data);
+            get_temp_pressure_humidity(response_data,response_len);
             response_len = 0;
             break;
         default:
@@ -74,11 +76,32 @@ esp_err_t _http_event_handlerWeather(esp_http_client_event_t *evt)
     return ESP_OK;
 }
 
+
+
+#define MAX_RETRY_COUNT 3
+
 esp_err_t _http_event_handlerTime(esp_http_client_event_t *evt)
 {
     ESP_LOGI("-","2");
-
+    static int retry_count = 0;
     switch (evt->event_id) {
+        case HTTP_EVENT_ERROR:
+            ESP_LOGE("HTTP_EVENT", "HTTP_EVENT_ERROR");
+            if (retry_count < MAX_RETRY_COUNT) {
+                retry_count++;
+                ESP_LOGI("HTTP_EVENT", "Retrying... (%d/%d)", retry_count, MAX_RETRY_COUNT);
+                esp_http_client_handle_t client = evt->client;
+                esp_err_t err = esp_http_client_perform(client);
+                if (err == ESP_OK) {
+                    ESP_LOGI("HTTP_EVENT", "Retry successful");
+                    retry_count = 0; // Başarılı olursa yeniden deneme sayacını sıfırla
+                } else {
+                    ESP_LOGE("HTTP_EVENT", "Retry failed");
+                }
+            } else {
+                ESP_LOGE("HTTP_EVENT", "Max retry count reached. Giving up.");
+            }
+            break;
         case HTTP_EVENT_ON_DATA:
             // Resize the buffer to fit the new chunk of data
             response_data2 = realloc(response_data2, response_len + evt->data_len);
@@ -88,7 +111,7 @@ esp_err_t _http_event_handlerTime(esp_http_client_event_t *evt)
         case HTTP_EVENT_ON_FINISH:
             all_chunks_received = true;
             ESP_LOGI("WorldTimeAPI", "Received data: %s", response_data2);
-            get_time_date(response_data2);
+            get_time_date(response_data2, response_len);
             response_len = 0;
             break;
         default:
