@@ -24,6 +24,20 @@ static void wifi_event_handler(void *event_handler_arg, esp_event_base_t event_b
     }
 }
 
+///bunu düzenle altta bi tane daha var  check_wifi_status
+void check_wifi_connection(void) 
+{
+    wifi_ap_record_t ap_info;
+    esp_err_t ret = esp_wifi_sta_get_ap_info(&ap_info);
+    if (ret == ESP_OK) {
+        printf("Wi-Fi is connected to SSID: %s\n", ap_info.ssid);
+    } else {
+        printf("Wi-Fi is not connected\n");
+        wifi_connection();
+        wait_for_wifi_connection();
+    }
+}
+
 
 void wifi_connection(void)
 {
