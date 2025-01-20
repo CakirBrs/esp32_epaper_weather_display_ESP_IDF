@@ -349,8 +349,8 @@ void epaper_draw_partial_blackAndRedBitmapsEnhanced(const unsigned char* black_b
     
     for (int w = 0; w < width; w++) { // lines of Image
         for (int h = 0; h < height; h++) { // pillars of Image
-            uint8_t pixel = (black_bitmap[w * 8 + h / 8] >> (7 - (h % 8))) & 0x01;
-            uint8_t pixelR = (red_bitmap[w * 8 + h / 8] >> (7 - (h % 8))) & 0x01;
+            uint8_t pixel = (black_bitmap[w * ((height+7)/8) + h / 8] >> (7 - (h % 8))) & 0x01; //w * 8 yanlış olan kısım burda her satırda kaç byte olduğunu öğrenmem gerekli bunu da h değerini 8'e bölersem bulabilirim.
+            uint8_t pixelR = (red_bitmap[w * ((height+7)/8) + h / 8] >> (7 - (h % 8))) & 0x01;
             
 
             // The corresponding byte and bit position in the buffer

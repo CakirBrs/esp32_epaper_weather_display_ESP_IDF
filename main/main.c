@@ -12,6 +12,11 @@
 
 //bitmaps
 #include "bitmaps/images/jgirl60x60.h"
+#include "bitmaps/images/personaBWR2.h"
+
+#include "bitmaps/images/testBMPData.h"
+#include "bitmaps/images/rainy26x26.h"
+
 #include "bitmaps/fonts/FreeMonoBold12pt7b.h"
 #include "bitmaps/fonts/fontYeni.h"
 
@@ -21,6 +26,7 @@ void periodic_task(void *pvParameters)
     epaper_wait_seconds(5);
     while (1)
     {
+        check_wifi_connection();
         openweather_api_http();
         epaper_wait_seconds(1);
         worldTime_api_http();
@@ -49,6 +55,7 @@ void periodic_task(void *pvParameters)
 
         epaper_writeBufferToDisplay();
         epaper_update();
+        epaper_deep_sleep();
         // Her 60 saniyede bir çalışacak kodu buraya ekleyin
         printf("Task is running every 60 seconds\n");
         vTaskDelay(60000 / portTICK_PERIOD_MS); // 60 saniye bekle
@@ -61,18 +68,29 @@ void app_main(void)
     size_t free_heap_size = xPortGetFreeHeapSize();
     printf("Free heap size opening: %d bytes\n", free_heap_size);
     nvs_flash_init();
+
+    epaper_init();
+    epaper_clear();
+    epaper_writeBufferToDisplay();
+    epaper_update();
     wifi_connection();
     wait_for_wifi_connection();
 
-    
-    epaper_init();
+    //epaper_draw_blackAndRedBitmaps(personaBWR2_BLACK, personaBWR2_RED);
+
     epaper_bw_buffer_clear();
     epaper_red_buffer_clear();
     epaper_draw_partial_blackAndRedBitmapsEnhanced(jgirl60x60_BLACK, jgirl60x60_RED, 190, 0, 60, 60, 60, 60);  
+    epaper_draw_partial_blackAndRedBitmapsEnhanced(rainy26x26_BLACK,rainy26x26_BLACK, 0, 0, 26, 26, 26, 26);
+    epaper_draw_partial_blackAndRedBitmapsEnhanced(testBMPData_BLACK, testBMPData_RED, 155, 50, 40, 40, 40, 40);
+    draw_line_horizontal(150, 240, 49);
+    draw_line_horizontal(150, 240, 91);
+    draw_line_vertical(154, 40, 100);
+    draw_line_vertical(196, 40, 100);
     epaper_writeBufferToDisplay();
     epaper_update();
 
-    epaper_wait_seconds(1);
+    epaper_wait_seconds(10);
 
     xTaskCreate(&periodic_task, "periodic_task", 4096, NULL, 5, NULL);
     free_heap_size = xPortGetFreeHeapSize();
