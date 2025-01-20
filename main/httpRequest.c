@@ -82,7 +82,7 @@ esp_err_t _http_event_handlerWeather(esp_http_client_event_t *evt)
 
 esp_err_t _http_event_handlerTime(esp_http_client_event_t *evt)
 {
-    ESP_LOGI("-","2");
+    //ESP_LOGI("-","2");
     static int retry_count = 0;
     switch (evt->event_id) {
         case HTTP_EVENT_ERROR:
@@ -193,7 +193,7 @@ void worldTime_api_http(void)
 
     esp_http_client_handle_t client = esp_http_client_init(&config);
     esp_http_client_set_header(client, "Content-Type", "application/x-www-form-urlencoded");
-    ESP_LOGI("-","1111");
+    //ESP_LOGI("-","1111");
 
     esp_err_t err = esp_http_client_perform(client);
     if (err == ESP_OK) {
