@@ -19,5 +19,6 @@ extern int retry_num;
 void wifi_connection(void);
 int check_wifi_status(void);
 void wait_for_wifi_connection();
+void check_wifi_connection(void);
 
 #endif // WIFI_CONNECTION_H
