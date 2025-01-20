@@ -379,6 +379,41 @@ void epaper_draw_partial_blackAndRedBitmapsEnhanced(const unsigned char* black_b
     }
 }
 
+
+
+void epaper_draw_partial_blackBitmapsEnhanced(const unsigned char* black_bitmap, int x, int y, int width, int height, int bitmap_width, int bitmap_height) {
+// control size of Image buffer's borders
+    if (x < 0 || y < 0 || x + width > DISPLAY_WIDTH || y + height > DISPLAY_HEIGHT) {
+        return; 
+    }
+    //int i = 0;
+    
+    for (int w = 0; w < width; w++) { // lines of Image
+        for (int h = 0; h < height; h++) { // pillars of Image
+            uint8_t pixel = (black_bitmap[w * 8 + h / 8] >> (7 - (h % 8))) & 0x01;
+            
+
+            // The corresponding byte and bit position in the buffer
+            int buffer_col = x + w; // Column in Buffer
+            int buffer_row = (y + h) / 8; // Byte line in Buffer
+            int buffer_bit = (y + h) % 8; // Bit position in Buffer
+
+            // Get the corresponding byte in the buffer
+            uint8_t *buffer_byte = &bw_buf[(buffer_col * (DISPLAY_HEIGHT / 8+1)) + buffer_row];
+
+
+            // Place pixel in buffer
+            if (!pixel) {
+                *buffer_byte |= (1 << (7-buffer_bit)); //Set bit to 1
+            } else {
+                *buffer_byte &= ~(1 << (7-buffer_bit)); // Set bit to 0
+            }
+        }
+    }
+}
+
+
+
 void place_image_into_buffer(int x, int y,const unsigned char* black_bitmap, int IMAGE_WIDTH, int IMAGE_HEIGHT) {
 // control size of Image buffer's borders
     if (x < 0 || y < 0 || x + IMAGE_WIDTH > DISPLAY_WIDTH || y + IMAGE_HEIGHT > DISPLAY_HEIGHT) {

@@ -40,6 +40,7 @@ void epaper_draw_blackBitmap(const unsigned char IMAGE[]);
 void epaper_draw_redBitmap(const unsigned char IMAGE[]);
 void epaper_draw_blackAndRedBitmaps(const unsigned char IMAGE_BLACK[], const unsigned char IMAGE_RED[]);
 void epaper_draw_partial_blackAndRedBitmapsEnhanced(const unsigned char* black_bitmap, const unsigned char* red_bitmap, int x, int y, int width, int height, int bitmap_width, int bitmap_height);
+void epaper_draw_partial_blackBitmapsEnhanced(const unsigned char* black_bitmap, int x, int y, int width, int height, int bitmap_width, int bitmap_height);
 void place_image_into_buffer(int x, int y,const unsigned char* black_bitmap, int IMAGE_WIDTH, int IMAGE_HEIGHT);
 void draw_pixel(int w, int h, uint8_t pixel, int x, int y);
 void draw_line_horizontal(int x1, int x2, int y);
